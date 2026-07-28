@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-public class DataReader
+public class Ingest
 {
     public static List<LogEntry> logs = [];
 

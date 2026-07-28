@@ -41,7 +41,7 @@
 
         // File.WriteAllLines("prices.csv", lines);
         // Console.WriteLine($"Wrote {lines.Count - 1} rows to prices.csv");
-        var readCsv = DataReader.CsvReader("prices.csv");
+        var readCsv = Ingest.CsvReader("prices.csv");
 
 
 
