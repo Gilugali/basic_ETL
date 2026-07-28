@@ -7,6 +7,25 @@ public class Ingest
 {
     public static List<LogEntry> logs = [];
 
+ public static string TickerNormalizer(string raw)
+  {
+    if(string.IsNullOrEmpty(raw)) return "";
+
+    raw = raw.Trim().ToUpper();
+
+    if (raw.Contains(":"))
+    {
+      raw = raw.Split(":")[1];
+    }
+
+    if (raw.Contains("."))
+    {
+      raw = raw.Split(".")[0];
+    }
+
+    return raw;
+  }
+
  public static void ErroReader(int line, string error, string reason)
   {
     var log = new LogEntry(line,error, reason);
@@ -50,6 +69,7 @@ public class Ingest
 
           if (isValid)
           {
+            row[0] = TickerNormalizer(row[0]);
             var priceRecord  = new PriceData(row[0], date, open, high, low, close, volume);
             prices.Add(priceRecord);
             Console.WriteLine(row[1]);
