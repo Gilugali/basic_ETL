@@ -72,7 +72,6 @@ public class Ingest
             row[0] = TickerNormalizer(row[0]);
             var priceRecord  = new PriceData(row[0], date, open, high, low, close, volume);
             prices.Add(priceRecord);
-            Console.WriteLine(row[1]);
           }
           else
           {
