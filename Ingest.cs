@@ -6,6 +6,22 @@ using System.Globalization;
 public class Ingest
 {
     public static List<LogEntry> logs = [];
+    private static readonly int VolumeSpike = 8_000_000;
+    private static readonly decimal PriceSpikeThreshold = 5.0m;
+
+ public static void AnomyDetection(List<PriceData> prices)
+
+  {
+    var flagged = prices.Where(p => p.Volume > VolumeSpike || Math.Abs(p.DailyReturnPercentage) > PriceSpikeThreshold).ToList();
+
+    foreach(var p in flagged)
+    {
+      Console.WriteLine($"Flag [{p.Symbol} | Date: {p.Date:MM/dd/yyyy} | Vol: {p.Volume:N0} | Return: {p.DailyReturnPercentage:F2} ]");
+    }
+
+  Console.WriteLine($"Total Anomolies Flagged: {flagged.Count}");
+
+  }
 
  public static string TickerNormalizer(string raw)
   {
@@ -98,6 +114,7 @@ public class Ingest
       ErroReader(0, "No file Found", "No file Found");
       Console.WriteLine("File does not exists.");
     }
+    AnomyDetection(prices);
     File.WriteAllLines("errors.logs", logs.Select(log => $"Line {log.line}: [{log.Error} -> {log.Reason}]"));
     return prices;
   }
