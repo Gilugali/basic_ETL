@@ -1,31 +1,36 @@
 
 
 
+using System.Data.Common;
 using System.Globalization;
+using marketstocks;
+using Microsoft.EntityFrameworkCore;
+
 
 public class Ingest
 {
-    public static List<LogEntry> logs = [];
-    private static readonly int VolumeSpike = 8_000_000;
-    private static readonly decimal PriceSpikeThreshold = 5.0m;
 
- public static void AnomyDetection(List<PriceData> prices)
+  public static List<LogEntry> logs = [];
+  private static readonly int VolumeSpike = 8_000_000;
+  private static readonly decimal PriceSpikeThreshold = 5.0m;
+
+  public static void AnomyDetection(List<PriceData> prices)
 
   {
     var flagged = prices.Where(p => p.Volume > VolumeSpike || Math.Abs(p.DailyReturnPercentage) > PriceSpikeThreshold).ToList();
 
-    foreach(var p in flagged)
+    foreach (var p in flagged)
     {
       Console.WriteLine($"Flag [{p.Symbol} | Date: {p.Date:MM/dd/yyyy} | Vol: {p.Volume:N0} | Return: {p.DailyReturnPercentage:F2} ]");
     }
 
-  Console.WriteLine($"Total Anomolies Flagged: {flagged.Count}");
+    Console.WriteLine($"Total Anomolies Flagged: {flagged.Count}");
 
   }
 
- public static string TickerNormalizer(string raw)
+  public static string TickerNormalizer(string raw)
   {
-    if(string.IsNullOrEmpty(raw)) return "";
+    if (string.IsNullOrEmpty(raw)) return "";
 
     raw = raw.Trim().ToUpper();
 
@@ -42,12 +47,13 @@ public class Ingest
     return raw;
   }
 
- public static void ErroReader(int line, string error, string reason)
+  public static void ErroReader(int line, string error, string reason)
   {
-    var log = new LogEntry(line,error, reason);
+    var log = new LogEntry(line, error, reason);
+
     logs.Add(log);
   }
-  public static List<PriceData> CsvReader (string filePath)
+  public static List<PriceData> CsvReader(string filePath)
   {
 
     var prices = new List<PriceData>();
@@ -57,12 +63,12 @@ public class Ingest
     if (File.Exists(filePath))
     {
       var lines = File.ReadLines(filePath)
-                      .Select((line, index) => new{ Text = line , lineNum = index + 1})
+                      .Select((line, index) => new { Text = line, lineNum = index + 1 })
                       .Skip(1);
 
-      foreach(var line in lines)
+      foreach (var line in lines)
       {
-        if(string.IsNullOrEmpty(line.Text))
+        if (string.IsNullOrEmpty(line.Text))
         {
           ErroReader(line.lineNum, line.Text, "The Line is empty");
           failedCount++;
@@ -71,7 +77,7 @@ public class Ingest
         ;
         var row = line.Text.Split(",");
 
-        if(row.Length is 7 && DateOnly.TryParse(row[1], CultureInfo.InvariantCulture, out var date) &&
+        if (row.Length is 7 && DateOnly.TryParse(row[1], CultureInfo.InvariantCulture, out var date) &&
         decimal.TryParse(row[2], CultureInfo.InvariantCulture, out var open) &&
         decimal.TryParse(row[3], CultureInfo.InvariantCulture, out var high) &&
         decimal.TryParse(row[4], CultureInfo.InvariantCulture, out var low) &&
@@ -81,12 +87,12 @@ public class Ingest
         {
 
           bool isValid = !string.IsNullOrWhiteSpace(row[0]) &&
-                          open > 0 && close >0 && high >= low && volume >=0;
+                          open > 0 && close > 0 && high >= low && volume >= 0;
 
           if (isValid)
           {
             row[0] = TickerNormalizer(row[0]);
-            var priceRecord  = new PriceData(row[0], date, open, high, low, close, volume);
+            var priceRecord = new PriceData(row[0], date, open, high, low, close, volume);
             prices.Add(priceRecord);
           }
           else
@@ -116,6 +122,8 @@ public class Ingest
     }
     AnomyDetection(prices);
     File.WriteAllLines("errors.logs", logs.Select(log => $"Line {log.line}: [{log.Error} -> {log.Reason}]"));
+
+
     return prices;
   }
 

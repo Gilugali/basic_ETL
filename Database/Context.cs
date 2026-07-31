@@ -1,12 +1,13 @@
 
-
+namespace marketstocks;
 
 using Microsoft.EntityFrameworkCore;
 
-public class Context : DbContext {
+public class Context : DbContext
+{
 
 
-  public DbSet<PriceData> Prices {get; set;}
+  public DbSet<PriceData> Prices { get; set; }
 
   // configuring d
 
@@ -18,6 +19,6 @@ public class Context : DbContext {
   // setting primary composite key
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    modelBuilder.Entity<PriceData>().HasKey(p => new {p.Symbol, p.Date});
+    modelBuilder.Entity<PriceData>().HasKey(p => new { p.Symbol, p.Date });
   }
 }
